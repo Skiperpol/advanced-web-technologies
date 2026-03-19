@@ -1,13 +1,31 @@
 <?php
 
 function rai_admin_page() {
+    $nonce_action = 'rai_admin_nonce_action';
+    $nonce = wp_create_nonce($nonce_action);
+
     if (isset($_POST['rai_save'])) {
-        $clean_content = stripslashes($_POST['rai_ads_content']);
+        if (
+            empty($_POST['rai_nonce']) ||
+            !wp_verify_nonce(wp_unslash((string) $_POST['rai_nonce']), $nonce_action)
+        ) {
+            wp_die('Nieprawidłowe żądanie (nonce).');
+        }
+
+        $raw_content = wp_unslash((string) ($_POST['rai_ads_content'] ?? ''));
+        $clean_content = wp_kses_post($raw_content);
         update_option('rai_ads_content', $clean_content);
         echo '<div class="updated"><p>Ogłoszenia zostały pomyślnie zapisane!</p></div>';
     }
 
     if (isset($_POST['rai_reset_stats'])) {
+        if (
+            empty($_POST['rai_nonce']) ||
+            !wp_verify_nonce(wp_unslash((string) $_POST['rai_nonce']), $nonce_action)
+        ) {
+            wp_die('Nieprawidłowe żądanie (nonce).');
+        }
+
         update_option('rai_ads_stats', []);
         echo '<div class="updated"><p>Statystyki zostały zresetowane do zera.</p></div>';
     }
@@ -71,6 +89,7 @@ function rai_admin_page() {
         <hr>
 
         <form method="post" action="">
+            <?php wp_nonce_field($nonce_action, 'rai_nonce'); ?>
             <h2>Edytuj treści ogłoszeń (HTML)</h2>
             <p class="description">
                 Wklej poniżej kody HTML swoich ogłoszeń. 
