@@ -22,8 +22,6 @@ function rai_inject_random_ad($content, $is_shortcode = false) {
         rai_increment_views($ad_id);
     }
 
-    define('RAI_AD_DISPLAYED', true);
-    
     $ad_html = '<div class="rai-ad-container" data-ad-id="'.$ad_id.'" style="cursor: pointer;">' . $random_ad . '</div>';
 
     return $is_shortcode ? $ad_html : $ad_html . $content;
