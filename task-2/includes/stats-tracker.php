@@ -8,6 +8,7 @@ function rai_increment_views($ad_id) {
 
 add_action('wp_footer', 'rai_click_tracker_script');
 function rai_click_tracker_script() {
+    if (!defined('RAI_AD_DISPLAYED')) return;
     ?>
     <script>
     document.addEventListener('DOMContentLoaded', function() {

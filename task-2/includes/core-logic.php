@@ -1,6 +1,6 @@
 <?php
 add_filter('the_content', 'rai_inject_random_ad');
-add_shortcode('losowa_reklama', 'rai_shortcode_handler');
+add_shortcode('losowe_ogloszenie', 'rai_shortcode_handler');
 
 function rai_shortcode_handler() {
     return rai_inject_random_ad('', true);
@@ -12,7 +12,7 @@ function rai_inject_random_ad($content, $is_shortcode = false) {
     $ads_raw = get_option('rai_ads_content', '');
     if (empty($ads_raw)) return $content;
 
-    $ads_array = preg_split('/\n\s*\n/', trim($ads_raw), -1, PREG_SPLIT_NO_EMPTY);
+    $ads_array = explode('---', $ads_raw);
     if (empty($ads_array)) return $content;
 
     $ad_id = array_rand($ads_array);
@@ -22,7 +22,9 @@ function rai_inject_random_ad($content, $is_shortcode = false) {
         rai_increment_views($ad_id);
     }
 
-    $ad_html = '<div class="rai-ad-container" data-ad-id="'.$ad_id.'" style="border: 1px solid #ddd; padding: 15px; margin: 20px 0; background: #fafafa; cursor: pointer;">' . $random_ad . '</div>';
+    define('RAI_AD_DISPLAYED', true);
+    
+    $ad_html = '<div class="rai-ad-container" data-ad-id="'.$ad_id.'" style="cursor: pointer;">' . $random_ad . '</div>';
 
     return $is_shortcode ? $ad_html : $ad_html . $content;
 }

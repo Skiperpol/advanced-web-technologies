@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Random Ads Injector
- * Description: Wtyczka do losowego wstawiania ogłoszeń na stronie ze statystykami i shortcode.
+ * Description: Wtyczka do wstawiania losowych ogłoszeń na stronie ze statystykami i shortcode.
  * Version: 1.0
  * Author: Michał Banaszkiewicz and Dawid Błaszczyk
  */

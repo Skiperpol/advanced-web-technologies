@@ -2,7 +2,8 @@
 
 function rai_admin_page() {
     if (isset($_POST['rai_save'])) {
-        update_option('rai_ads_content', $_POST['rai_ads_content']);
+        $clean_content = stripslashes($_POST['rai_ads_content']);
+        update_option('rai_ads_content', $clean_content);
         echo '<div class="updated"><p>Ogłoszenia zostały pomyślnie zapisane!</p></div>';
     }
 
@@ -13,8 +14,7 @@ function rai_admin_page() {
 
     $ads_raw = get_option('rai_ads_content', '');
     $stats = get_option('rai_ads_stats', []);
-    
-    $ads_array = preg_split('/\n\s*\n/', trim($ads_raw), -1, PREG_SPLIT_NO_EMPTY);
+    $ads_array = explode('---', $ads_raw);
 
     ?>
     <div class="wrap">
@@ -22,51 +22,51 @@ function rai_admin_page() {
 
         <hr>
 
-        <h2>Aktualne Statystyki</h2>
-        <p>Poniżej znajdziesz dane dotyczące wydajności Twoich losowych ogłoszeń.</p>
-        
-        <table class="wp-list-table widefat fixed striped" style="margin-bottom: 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-            <thead>
-                <tr>
-                    <th style="width: 50px;">ID</th>
-                    <th>Treść ogłoszenia (podgląd)</th>
-                    <th style="width: 120px;">Wyświetlenia</th>
-                    <th style="width: 120px;">Kliknięcia</th>
-                    <th style="width: 100px;">CTR (%)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (!empty($ads_array) && $ads_array[0] !== ''): ?>
-                    <?php foreach($ads_array as $id => $ad): 
-                        $v = isset($stats[$id]['views']) ? $stats[$id]['views'] : 0;
-                        $c = isset($stats[$id]['clicks']) ? $stats[$id]['clicks'] : 0;
-                        $ctr = ($v > 0) ? round(($c / $v) * 100, 2) : 0;
-                    ?>
+            <h2>Aktualne Statystyki</h2>
+            <p>Poniżej znajdziesz dane dotyczące wydajności Twoich losowych ogłoszeń.</p>
+            
+            <table class="wp-list-table widefat fixed striped" style="margin-bottom: 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <thead>
                     <tr>
-                        <td><strong>#<?php echo $id; ?></strong></td>
-                        <td>
-                            <code style="background: #f0f0f0; padding: 3px 6px; border-radius: 3px;">
-                                <?php echo esc_html(substr(strip_tags($ad), 0, 80)); ?>...
-                            </code>
-                        </td>
-                        <td><span class="dashicons dashicons-visibility"></span> <?php echo $v; ?></td>
-                        <td><span class="dashicons dashicons-awards"></span> <?php echo $c; ?></td>
-                        <td>
-                            <strong style="color: <?php echo ($ctr > 0) ? '#28a745' : '#666'; ?>;">
-                                <?php echo $ctr; ?>%
-                            </strong>
-                        </td>
+                        <th style="width: 50px;">ID</th>
+                        <th>Treść ogłoszenia</th>
+                        <th style="width: 120px;">Wyświetlenia</th>
+                        <th style="width: 120px;">Kliknięcia</th>
+                        <th style="width: 100px;">CTR (%)</th>
                     </tr>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <tr>
-                        <td colspan="5" style="text-align: center; padding: 20px;">
-                            Brak ogłoszeń do wyświetlenia. Dodaj je w formularzu poniżej.
-                        </td>
-                    </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?php if (!empty($ads_array) && $ads_array[0] !== ''): ?>
+                        <?php foreach($ads_array as $id => $ad): 
+                            $v = $stats[$id]['views'] ?? 0;
+                            $c = $stats[$id]['clicks'] ?? 0;
+                            $ctr = $v ? round(($c / $v) * 100, 2) : 0;
+                        ?>
+                        <tr>
+                            <td><strong>#<?php echo $id; ?></strong></td>
+                            <td>
+                                <code style="background: #f0f0f0; padding: 3px 6px; border-radius: 3px;">
+                                    <?php echo esc_html(substr(strip_tags($ad), 0, 80)); ?>...
+                                </code>
+                            </td>
+                            <td><span class="dashicons dashicons-visibility"></span> <?php echo $v; ?></td>
+                            <td><span class="dashicons dashicons-awards"></span> <?php echo $c; ?></td>
+                            <td>
+                                <strong style="color: <?php echo ($ctr > 0) ? '#28a745' : '#666'; ?>;">
+                                    <?php echo $ctr; ?>%
+                                </strong>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 20px;">
+                                Brak ogłoszeń do wyświetlenia. Dodaj je w formularzu poniżej.
+                            </td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
 
         <hr>
 
@@ -74,7 +74,7 @@ function rai_admin_page() {
             <h2>Edytuj treści ogłoszeń (HTML)</h2>
             <p class="description">
                 Wklej poniżej kody HTML swoich ogłoszeń. 
-                <strong>Ważne:</strong> Każde ogłoszenie musi być oddzielone od poprzedniego przynajmniej jedną pustą linią (podwójny Enter).
+                <strong>Ważne:</strong> Każde ogłoszenie musi być oddzielone od poprzedniego znakami ---.
             </p>
             
             <div style="margin: 15px 0;">
@@ -95,7 +95,7 @@ function rai_admin_page() {
         <div style="margin-top: 40px; padding: 20px; background: #fff; border: 1px solid #ccd0d4; border-left: 4px solid #007cba;">
             <h3 style="margin-top: 0;">Pomoc techniczna</h3>
             <ul>
-                <li>Użyj shortcode <code>[losowa_reklama]</code> w dowolnym miejscu posta, aby ręcznie wstawić reklamę.</li>
+                <li>Użyj shortcode <code>[losowe_ogloszenie]</code> w dowolnym miejscu posta, aby ręcznie wstawić reklamę.</li>
             </ul>
         </div>
     </div>
